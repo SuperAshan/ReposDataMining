@@ -1,0 +1,15 @@
+package BasicTest;
+
+import java.util.TreeSet;
+
+public class TreeSet1 {
+	public void Test()
+	{
+		TreeSet treeSet=new TreeSet();
+		for(int i=0;i<5;i++)
+		{
+			treeSet.
+		}
+	}
+
+}

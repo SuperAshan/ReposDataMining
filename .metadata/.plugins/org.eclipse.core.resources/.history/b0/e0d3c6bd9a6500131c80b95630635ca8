@@ -1,0 +1,350 @@
+package Tool;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.TreeSet;
+
+import Config.Conf;
+import Datas.UserData;
+
+//import com.sun.java.util.jar.pack.Package.File;
+
+public class TextOperation {
+	private int nodenumber;
+	private String directorypathString;
+	
+	public TextOperation(int number,String isconnected)
+	{
+		this.nodenumber=number;
+		directorypathString=Conf.GetDataDir() +Integer.toString(nodenumber);
+		File file=new File(directorypathString);
+		if(!file.isDirectory())
+		{
+			file.mkdir();
+		}
+	}
+	 /**  
+     * 读取文件内容  
+     *  
+     * @param filePathAndName  
+     *            String 如 c:\\1.txt 绝对路径  
+     * @return boolean  
+     */   
+   public static String readFile(String filePathAndName) {   
+       String fileContent = "";   
+       try {    
+           File f = new File(filePathAndName);   
+           if(f.isFile()&&f.exists()){   
+               InputStreamReader read = new InputStreamReader(new FileInputStream(f),"UTF-8");   
+               BufferedReader reader=new BufferedReader(read);   
+               String line;   
+               while ((line = reader.readLine()) != null) {   
+                   fileContent += line;   
+               }     
+               read.close();   
+           }   
+       } catch (Exception e) {   
+           System.out.println("读取文件内容操作出错");   
+           e.printStackTrace();   
+       }   
+       return fileContent;   
+   } 
+   
+   public List<Integer> GetDegreeX() throws IOException
+   {
+	   List<Integer> result=new ArrayList<Integer>();
+	   String path = directorypathString +"/" +"DegreeX"+".txt";
+		File f = new File(path);
+		 if(f.isFile()&&f.exists()){   
+             InputStreamReader read = new InputStreamReader(new FileInputStream(f),"UTF-8");   
+             BufferedReader reader=new BufferedReader(read);   
+             String line;   
+             while ((line = reader.readLine()) != null) {   
+            	 int key=Integer.parseInt(line.trim());
+            	 result.add(key);
+            	 }
+             }
+		 return result;
+   }
+   
+   
+   /**  
+    * 写入文件  
+    *  
+    * @param filePathAndName  
+    *            String 如 c:\\1.txt 绝对路径  
+    */   
+  public static void writeFile(String filePathAndName, List<UserData> usercollection) {   
+      try {   
+          File f = new File(filePathAndName);   
+          if (!f.exists()) {   
+              f.createNewFile();   
+          }   
+          OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(f),"GB2312");   
+          BufferedWriter writer=new BufferedWriter(write);
+          
+          
+          for(int i=0;i<usercollection.size()-1;i++){
+  			
+        	  writer.write(i+" "+usercollection.get(i).getName());
+				System.out.println(i+" "+usercollection.get(i).getName());
+				writer.append("\n");
+			
+			//output.append("\n");
+		}
+          writer.flush();
+          writer.close();
+          
+          
+//          writer.write(fileContent);
+//          writer.close();
+      
+      } catch (Exception e) {   
+          System.out.println("写文件内容操作出错");   
+          e.printStackTrace();   
+      }   
+  }
+  
+  public void Print(ArrayList<String> numberList, String name)
+			throws IOException
+	{
+		String NumberListPath = directorypathString +"/" +name+".txt";
+		File numberListFile = new File(NumberListPath);
+		if (!numberListFile.exists())
+		{
+			numberListFile.createNewFile();
+		}
+		OutputStreamWriter numberListwrite = new OutputStreamWriter(
+				new FileOutputStream(numberListFile), "GB2312");
+		BufferedWriter numberListwriter = new BufferedWriter(numberListwrite);
+		int number = numberList.size();
+		for (int i = 0; i < number; i++)
+		{
+			numberListwriter.write((numberList.get(i)));
+			numberListwriter.append("\n");
+			numberListwriter.flush();
+		}
+		numberListwriter.flush();
+		numberListwriter.close();
+	}
+
+	public void Print(int[][] data, String name) throws IOException
+	{
+		String Path = directorypathString +"/" +name+".txt";
+		File file = new File(Path);
+		if (!file.exists())
+		{
+			file.createNewFile();
+		}
+		OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(
+				file, true), "GB2312");
+		BufferedWriter writer = new BufferedWriter(write);
+		int number = data.length;
+		for (int i = 0; i < number; i++)
+		{
+			int columnsize = data[i].length;
+			for (int j = 0; j < columnsize; j++)
+			{
+				writer.write(data[i][j] + " ");
+				writer.flush();
+			}
+			writer.append("\n");
+			writer.flush();
+
+		}
+		writer.close();
+	}
+
+	public void Print(List<Integer> degreelist, List<Double> degreePk,
+			String name) throws IOException
+	{
+		String NumberListPath = directorypathString +"/" +name+".txt";
+		File numberListFile = new File(NumberListPath);
+		if (!numberListFile.exists())
+		{
+			numberListFile.createNewFile();
+		}
+		OutputStreamWriter numberListwrite = new OutputStreamWriter(
+				new FileOutputStream(numberListFile), "GB2312");
+		BufferedWriter numberListwriter = new BufferedWriter(numberListwrite);
+		int number = degreelist.size();
+
+		for (int i = 0; i < number; i++)
+		{
+			StringBuffer buffertemp = new StringBuffer();
+			buffertemp.append(Integer.toString(degreelist.get(i)));
+			buffertemp.append("\t");
+			buffertemp.append(Double.toString(degreePk.get(i)));
+			buffertemp.append("\n");
+			numberListwriter.write(buffertemp.toString());
+			numberListwriter.flush();
+		}
+		numberListwriter.flush();
+		numberListwriter.close();
+	}
+
+	// public void Print(List<String> numberList,String name) throws IOException
+	// {
+	// String
+	// NumberListPath=Conf.GetDataDir()+"\\NetworkStatic\\"+name+Integer.toString(this.nodenumber)+".txt";
+	// File numberListFile = new File(NumberListPath);
+	// if (!numberListFile.exists()) {
+	// numberListFile.createNewFile();
+	// }
+	// OutputStreamWriter numberListwrite = new OutputStreamWriter(new
+	// FileOutputStream(numberListFile),"GB2312");
+	// BufferedWriter numberListwriter=new BufferedWriter(numberListwrite);
+	// int number=numberList.size();
+	// for(int i=0;i<number;i++)
+	// {
+	// numberListwriter.write(numberList.get(i));
+	// numberListwriter.append("\n");
+	// numberListwriter.flush();
+	// }
+	// numberListwriter.flush();
+	// numberListwriter.close();
+	// }
+
+	public void Print(List<Integer> numberList, String name) throws IOException
+	{
+		String NumberListPath = directorypathString +"/" +name+".txt";
+		File numberListFile = new File(NumberListPath);
+		if (!numberListFile.exists())
+		{
+			numberListFile.createNewFile();
+		}
+		OutputStreamWriter numberListwrite = new OutputStreamWriter(
+				new FileOutputStream(numberListFile), "GB2312");
+		BufferedWriter numberListwriter = new BufferedWriter(numberListwrite);
+		int number = numberList.size();
+		for (int i = 0; i < number; i++)
+		{
+			numberListwriter.write(Integer.toString(numberList.get(i)));
+			numberListwriter.append("\n");
+			numberListwriter.flush();
+		}
+		numberListwriter.flush();
+		numberListwriter.close();
+	}
+
+	public void Print(long time, String descripe) throws IOException
+	{
+		String Path = directorypathString +"/" +"TimeSpan"+".txt";
+		File file = new File(Path);
+		if (!file.exists())
+		{
+			file.createNewFile();
+		}
+		OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(
+				file, true), "GB2312");
+		BufferedWriter writer = new BufferedWriter(write);
+		BigDecimal minitue = new BigDecimal((double) time / 60000.0f);
+		BigDecimal hour = new BigDecimal((double) time / 3600000.0f);
+		String minresult = minitue.toString();
+		String hourresult = hour.toString();
+		writer.write(descripe + ":\t" + Long.toString(time) + "(毫秒)" + "="
+				+ minresult + "(分钟)" + "=" + hourresult + "(小时)");
+		writer.append("\n");
+		writer.flush();
+		writer.close();
+	}
+	
+	public void getStaticData() throws IOException, IOException
+	{
+		String Path = directorypathString +"/" +"NetWorkStaticData"+".txt";
+		File file = new File(Path);
+		if(file.isFile()&&file.exists()){   
+            InputStreamReader read = new InputStreamReader(new FileInputStream(file),"GB2312");   
+            BufferedReader reader=new BufferedReader(read);   
+            String line;   
+            while ((line = reader.readLine()) != null) {  
+            	String[] s=line.split(" ");
+            	}
+            }
+	}
+	
+	public void PrintSeperatorDegree(String data) throws IOException
+	{
+		String Path = directorypathString +"/" +"SeperatorDegree"+".txt";
+		File file = new File(Path);
+		if (!file.exists())
+		{
+			file.createNewFile();
+		}
+		OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(
+				file, true), "GB2312");
+		BufferedWriter writer = new BufferedWriter(write);
+		writer.write(data);
+		writer.append("\n");
+		writer.flush();
+		writer.close();
+	}
+
+	public void Print(String data, String name) throws IOException
+	{
+		String Path = directorypathString +"/" +"NetWorkStaticData"+".txt";
+		File file = new File(Path);
+		if (!file.exists())
+		{
+			file.createNewFile();
+		}
+		OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(
+				file, true), "GB2312");
+		BufferedWriter writer = new BufferedWriter(write);
+		writer.write(name + "\t" + data + "\t");
+		writer.append("\n");
+		writer.flush();
+		writer.close();
+	}
+	
+	public void Print(HashMap<Integer, TreeSet<Integer>> data,String name,int nodenumber) throws IOException
+	{
+		String NumberListPath = directorypathString +"/" +name+".txt";
+		File numberListFile = new File(NumberListPath);
+		if (!numberListFile.exists())
+		{
+			numberListFile.createNewFile();
+		}
+		OutputStreamWriter numberListwrite = new OutputStreamWriter(
+				new FileOutputStream(numberListFile), "GB2312");
+		BufferedWriter numberListwriter = new BufferedWriter(numberListwrite);
+		int number = data.size();
+		Iterator<Integer> iterator=data.keySet().iterator();
+		
+		while(iterator.hasNext())
+		{
+			int key=iterator.next();
+			TreeSet<Integer> treeSet=data.get(key);
+			Iterator<Integer> iterator2=treeSet.iterator();
+			String edgefinalindexString=" ";
+			while(iterator2.hasNext())
+			{
+				edgefinalindexString+=Integer.toString((int)iterator2.next());
+				edgefinalindexString+=" ";
+			}
+			numberListwriter.write(key+":"+edgefinalindexString);
+			numberListwriter.append("\n");
+			numberListwriter.flush();
+			
+		}
+		numberListwriter.flush();
+		numberListwriter.close();
+		
+	}
+	
+
+
+}

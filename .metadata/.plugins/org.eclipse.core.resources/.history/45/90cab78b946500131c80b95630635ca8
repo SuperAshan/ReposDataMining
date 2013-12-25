@@ -1,0 +1,296 @@
+package Tool;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+//import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
+
+/**
+ * @author weitao
+ * 
+ */
+
+public class AdjacementMatrix
+{
+	private HashMap<Integer, TreeSet<Integer>> adjacementMap; // 存放图的边
+	private List<String> userNameList; // 每个点的信息
+	private int nodenumber;
+
+	/**
+	 * @param InputMap
+	 *            接受map形式的输入
+	 */
+	public AdjacementMatrix(HashMap<Integer, TreeSet<Integer>> InputMap,
+			int nodenumber)
+	{
+		adjacementMap = new HashMap<Integer, TreeSet<Integer>>();
+		adjacementMap = InputMap;
+		this.nodenumber = nodenumber;
+	}
+
+	/**
+	 * 无输入，执行过程中构造临街矩阵
+	 */
+	public AdjacementMatrix()
+	{
+		adjacementMap = new HashMap<Integer, TreeSet<Integer>>();
+
+	}
+	
+	/**
+	 * 无输入，执行过程中构造临街矩阵
+	 */
+	public HashMap getAdjacementMap()
+	{
+		return this.adjacementMap;
+
+	}
+
+
+	/**
+	 * @param Username
+	 *            设置用户名List
+	 */
+	public void setUserNameList(List<String> Username)
+	{
+		userNameList = new ArrayList();
+		userNameList = Username;
+	}
+
+	/**
+	 * @return 获得用户名list
+	 */
+	public List<String> getUserNameList()
+	{
+		return userNameList;
+	}
+
+	/**
+	 * @return 得到矩阵的行数
+	 */
+	public int getSize()
+	{
+		// return adjacementMap.size();
+		return this.getNodenumber();
+	}
+
+	/**
+	 * @param xindex
+	 *            矩阵的横坐标
+	 * @param yindex
+	 *            矩阵的列坐标
+	 */
+	public void setValue(int xindex, int yindex)
+	{
+		if (adjacementMap != null)
+		{
+			if (adjacementMap.containsKey(xindex))
+				adjacementMap.get(xindex).add(yindex);
+			else
+			{
+				TreeSet valuecollectionSet = new TreeSet<Object>();
+				valuecollectionSet.add(yindex);
+				adjacementMap.put(xindex, valuecollectionSet);
+			}
+		} else
+		{
+			adjacementMap = new HashMap<Integer, TreeSet<Integer>>();
+			TreeSet valuecollectionSet = new TreeSet<Object>();
+			valuecollectionSet.add(yindex);
+			adjacementMap.put(xindex, valuecollectionSet);
+
+		}
+	}
+
+	/**
+	 * @param xindex
+	 *            矩阵的横坐标
+	 * @param yindex
+	 *            矩阵的列坐标
+	 * @return 返回处于当前横纵坐标的元素（有值为1，无值为0
+	 */
+	public int getValue(int xindex, int yindex)
+	{
+		if (adjacementMap.containsKey(xindex))
+		{
+			return adjacementMap.get(xindex).contains(yindex) ? 1 : 0;
+		} else
+		{
+			return 0;
+		}
+	}
+
+	/**
+	 * @param xindex
+	 *            矩阵的横坐标
+	 * @return 返回当前行的列数（即点的度)
+	 */
+	public int getRowLength(int xindex)
+	{
+		if (adjacementMap.containsKey(xindex))
+		{
+			return adjacementMap.get(xindex).size();
+		} else
+		{
+			return 0;
+		}
+	}
+
+	/**
+	 * @param xindex
+	 *            根据横坐标，返回邻居节点集合
+	 * @return
+	 */
+	public TreeSet get(int xindex)
+	{
+		if (adjacementMap.containsKey(xindex))
+		{
+			return adjacementMap.get(xindex);
+		} else
+		{
+			return null;
+		}
+	}
+
+	/**
+	 * @return 返回二维数组形式的矩阵
+	 */
+	public int[][] getMatrix()
+	{
+		int size = this.getNodenumber();
+		int[][] Matrix = new int[size][];
+		for (int i = 0; i < size; i++)
+			Matrix[i] = new int[size-i];
+		for (int i = 0; i < size; i++)
+		{
+			for (int j = i; j < size; j++)
+			{
+				Matrix[i][j-i] = getValue(i, j);
+			}
+		}
+		return Matrix;
+	}
+	
+	/**
+	 * @return 返回二维数组形式的矩阵
+	 */
+	public int[][] getwholeMatrix()
+	{
+		int size = this.getNodenumber();
+		int[][] Matrix = new int[size][];
+		try
+		{
+			for (int i = 0; i < size; i++)
+				Matrix[i] = new int[size];
+		} catch (Exception e)
+		{
+			System.out.println(e.getMessage());
+			// TODO: handle exception
+		}
+		
+		for (int i = 0; i < size; i++)
+		{
+			for (int j = 0; j < size; j++)
+			{
+				Matrix[i][j] = getValue(i, j);
+			}
+		}
+		return Matrix;
+	}
+
+	/**
+	 * @param edgeFinalPointcollection
+	 *            添加点所连接的边
+	 */
+	private void addValue(TreeSet edgeFinalPointcollection)
+	{
+		int key = this.getNodenumber();
+		adjacementMap.put(key, edgeFinalPointcollection);
+		Iterator iterator = edgeFinalPointcollection.iterator();
+		while (iterator.hasNext())
+		{
+			adjacementMap.get((Integer) iterator.next()).add(key);
+		}
+	}
+
+	/**
+	 * @param edgeFinalPointcollection
+	 *            添加点所连接的边
+	 * @param name
+	 *            点的名称
+	 */
+	private void addValue(TreeSet edgeFinalPointcollection, String name)
+	{
+		int key = this.getNodenumber();
+		adjacementMap.put(key, edgeFinalPointcollection);
+		Iterator iterator = edgeFinalPointcollection.iterator();
+		while (iterator.hasNext())
+		{
+			adjacementMap.get((Integer) iterator.next()).add(key);
+		}
+		if (userNameList != null)
+			userNameList.add(name);
+		this.nodenumber++;
+	}
+
+	/**
+	 * @param xindex
+	 *            要删除的点的索引
+	 */
+	public void deleteValue(int xindex)
+	{
+		if (adjacementMap.containsKey(xindex))
+		{
+			TreeSet valueCollectionSet = adjacementMap.get(xindex);
+			Iterator iterator = valueCollectionSet.iterator();
+			while (iterator.hasNext())
+			{
+				adjacementMap.get((Integer) iterator.next()).remove(xindex);
+			}
+			adjacementMap.remove(xindex);
+			if (userNameList != null)
+				userNameList.remove(xindex);
+			this.nodenumber--;
+		} else
+		{
+			this.nodenumber--;
+			;
+		}
+	}
+
+	/* (non-Javadoc)
+	 *  复制矩阵
+	 * @see java.lang.Object#clone()
+	 */
+	public AdjacementMatrix clone()
+	{
+		HashMap<Integer, TreeSet<Integer>> cloneadjacement; // 存放图的边
+
+		cloneadjacement = (HashMap) adjacementMap.clone();
+
+		AdjacementMatrix resultAdjacementMatrix = new AdjacementMatrix(
+				cloneadjacement, nodenumber);
+
+		return resultAdjacementMatrix;
+	}
+
+	
+	/**
+	 * @return 返回矩阵的点数
+	 */
+	public int getNodenumber()
+	{
+		return nodenumber;
+	}
+
+	public void print()
+	{
+
+	}
+
+}

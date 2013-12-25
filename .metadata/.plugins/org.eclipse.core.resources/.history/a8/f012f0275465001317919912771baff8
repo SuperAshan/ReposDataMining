@@ -1,0 +1,670 @@
+package Statistic;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.math.BigDecimal;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeSet;
+
+import org.omg.CORBA.PUBLIC_MEMBER;
+
+import PositionProcess.StressMajorization.Floyd;
+import PositionProcess.StressMajorization.StressMajorazation;
+import Tool.AdjacementMatrix;
+import Tool.TextOperation;
+import Tool.WeightAdjacementMatrix;
+import Config.Conf;
+import Data.MatrixConverter;
+import Data.Node;
+
+/**
+ * @author ittc_zym TODO
+ */
+public class NetWorkMeasurement
+{
+
+	public AdjacementMatrix edgeInputMap; // Map<点的序号，<连接的点的序号,边权重>>
+
+	private List<Integer> degreeDistributionX; // 度分布
+	private List<Integer> degreeDistributionY;
+	private double clusteringCoefficient; // 簇系数
+	private List<Double> nodeClusterCoffcient;
+	private int nodenumber;
+	private double vulnerability; // 脆弱性
+	private double GraphDensity; // 图密度
+	
+	private List<String> CyclicCoefficient; // 环系数
+	private double GraphCyclicCoefficient; // 图的环系数
+	private HashMap<Integer, Integer> loopNumberHashMap;// 各个边长的环的个数
+	private SortedMap<Integer, Double> rich_club_CoefficientMap; // 富人俱乐部系数
+	private SortedMap<Double, Integer> GraphRobustness_ConnectedGraph; // 鲁棒性
+																		// 去除点的比例和最大连通子图的节点数
+	private SortedMap<Double, Double> GraphRobustness_AveragePath; // 鲁棒性
+																	// 去除点的比例和平均最短路径图
+	private HashMap<Integer, TreeSet<Integer>> DegreeToNodeindex; // 度相关
+	private double Pearsoncorrelationcoefficient = 0; // 皮特森系数
+	private int edgenumber = 6409410; // 总的边数
+	private double averagedegree = 6409410*2/501459; // 平均度
+	private double assortativeCoefficient = 0; // 同配系数
+	private double weightassortativeCoefficient = 0; // 节点类型是有权的，比如说以节点的度作为节点的权值
+	private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");// 设置日期格式
+	private TextOperation tOperation;
+
+	// private List<Integer> degreeList;
+	// private SortedMap<Double,>
+	// private double vu
+
+	/**
+	 * TODO 构造函数
+	 * 
+	 * @param edgeInput
+	 *            输入图的邻接矩阵
+	 * @param nodenubmertemp
+	 *            图中点的数字
+	 */
+	public NetWorkMeasurement(AdjacementMatrix edgeInput, int nodenubmertemp)
+	{
+		
+		this.edgeInputMap = new AdjacementMatrix();
+		this.edgeInputMap = edgeInput;
+		this.nodenumber = nodenubmertemp;
+		tOperation=new TextOperation(this.nodenumber);
+	}
+	
+	public void getstatic() throws IOException
+	{
+		tOperation.getStaticData();
+	}
+
+	public NetWorkMeasurement(int nodenubmertemp)
+	{
+		this.edgeInputMap = new AdjacementMatrix();
+		this.nodenumber = nodenubmertemp;
+	}
+	
+	public void getDegreeX() throws IOException
+	{
+		this.degreeDistributionX=new ArrayList<Integer>();
+		degreeDistributionX=tOperation.GetDegreeX();
+	}
+	
+	public void GetSeperationDegree()
+	{
+		Random r=new Random();
+		int AverageTime=0;
+		int seed=0;
+		String PerSeedDistring="";
+		int StepNumber=1;
+		while(AverageTime<8000 )
+		{
+			seed=r.nextInt(nodenumber);
+			TreeSet<Integer> FormerSet=new TreeSet<Integer>();
+			FormerSet=this.edgeInputMap.get(seed);
+			PerSeedDistring+=FormerSet.size();
+			PerSeedDistring+=" ";
+			StepNumber+=FormerSet.size();
+			while(StepNumber<nodenumber)
+			{
+				TreeSet<Integer> LatterSet=new TreeSet<Integer>();
+				for (Integer integer : FormerSet) {
+					TreeSet<Integer> tempIntegers=this.edgeInputMap.get(integer);
+					LatterSet.addAll(tempIntegers);
+					
+				}
+				StepNumber+=LatterSet.size();
+				PerSeedDistring+=LatterSet.size();
+				PerSeedDistring+=" ";
+				FormerSet=(TreeSet<Integer>)LatterSet.clone();
+				
+			}
+			
+			
+			
+			
+		}
+	}
+	
+	
+
+	/**
+	 * DataProcess TODO 主要的计算函数
+	 * 
+	 * @throws IOException
+	 */
+	public void GetDegreeAndClusterCoefficient() throws IOException
+	{
+		// long startTime=System.currentTimeMillis();
+
+		System.out.println(this.df.format(new Date(System.currentTimeMillis()))
+				+"\t"+ "开始执行：");
+		int[] nodedegree = new int[this.nodenumber];
+
+		for (int i = 0; i < this.nodenumber; i++) // 统计每个点的度和聚类系数
+		{
+			int nodeNeiberEdges = 0;
+			int perneibornumber = this.edgeInputMap.getRowLength(i);
+			this.edgenumber += perneibornumber;
+			nodedegree[i] = perneibornumber;
+			if (perneibornumber < 2)
+			{
+				continue;
+			}
+			Object[] neiber = this.edgeInputMap.get(i).toArray();
+			double nodePossibleNeiboredge = perneibornumber
+					* (perneibornumber - 1) / 2;
+			Object[] neiborArray = this.edgeInputMap.get(i).toArray();
+			for (int j = 0; j < perneibornumber; j++)
+			{
+				for (int k = j + 1; k < perneibornumber; k++)
+				{
+					if (this.edgeInputMap.getValue((Integer) neiber[j],
+							(Integer) neiber[k]) == 1)
+					{
+						nodeNeiberEdges++;
+					}
+				}
+			}
+			double nodeclustecoffcient = nodePossibleNeiboredge
+					/ nodePossibleNeiboredge;
+			this.nodeClusterCoffcient.add(nodeclustecoffcient);
+			this.clusteringCoefficient += nodeclustecoffcient;
+		}
+
+		this.averagedegree = this.edgenumber / this.nodenumber;
+		this.edgenumber /= 2;
+		this.clusteringCoefficient /= this.nodenumber;
+		for (int element : nodedegree)
+		{
+			int index = 0;
+			index = this.degreeDistributionX.indexOf(element);
+
+			if (index < 0)
+			{
+				this.degreeDistributionX.add(element);
+				this.degreeDistributionY.add(1);
+			} else
+			{
+				int degree = this.degreeDistributionY.get(index);
+				this.degreeDistributionY.set(index, ++degree);
+			}
+		}
+
+		tOperation.Print(this.degreeDistributionX, "DegreeX");
+		tOperation.Print(this.degreeDistributionY, "DegreeY");
+		BigDecimal doubleBigDecimal = new BigDecimal(this.clusteringCoefficient);
+
+		String bigdString = doubleBigDecimal.toString();
+
+		tOperation.Print(bigdString, "Cluster Coefficient(聚类系数):\t");
+		long degreetime = System.currentTimeMillis();
+		// Print(degreetime-startTime, "度分布和聚类系数");
+		System.out.println(this.df.format(new Date(System.currentTimeMillis()))
+				+"\t"
+				+ "聚类系数和度分布计算完毕：");
+
+	}
+
+	/**
+	 * @return the clusteringCoefficient
+	 */
+	private double getClusteringCoefficient()
+	{
+		return this.clusteringCoefficient;
+	}
+
+	/**
+	 * GetDegreeCorrelation TODO 计算度相关函数,前提是先生成度到点索引的map
+	 * 
+	 * @throws IOException
+	 */
+	public void GetDegreeCorrelation() throws IOException
+	{
+
+//		this.edgeInputMap = null;
+		System.out.println(this.df.format(new Date(System.currentTimeMillis()))
+				+"\t"+"开始计算度相关函数！");
+		Collections.sort(this.degreeDistributionX);
+		int size=this.degreeDistributionX.size();
+		List<Double> degreefunpklist = new ArrayList<Double>();
+		for(int i=0;i<size;i++)
+		{
+			Iterator<Integer> iterator2 = this.DegreeToNodeindex.keySet()
+					.iterator();
+			int degreek = this.degreeDistributionX.get(i);
+			if(degreek==0)
+			{
+				degreefunpklist.add((double) 0.0f);
+				continue;
+			}
+			double funPk = 0;
+			while (iterator2.hasNext())
+			{
+				int degree_k = iterator2.next();
+				double pkconditional = 0;
+				if(degree_k!=0)
+				{
+				if (degree_k != degreek)
+				{
+					pkconditional = this.getPkConditional(degreek, degree_k);
+				}
+				}
+				funPk += degree_k * pkconditional;
+
+			}
+			degreefunpklist.add(funPk);
+		}
+		tOperation.Print(this.degreeDistributionX, degreefunpklist, "DegreeCorrelation");
+		System.out.println(this.df.format(new Date(System.currentTimeMillis()))
+				+"\t"+ "度相关函数计算完毕！");
+
+	}
+
+	/**
+	 * @return the degreeDistributionX
+	 */
+	public List<Integer> getDegreeDistributionX()
+	{
+		return this.degreeDistributionX;
+	}
+
+	/**
+	 * @return the degreeDistributionY
+	 */
+	public List<Integer> getDegreeDistributionY()
+	{
+		return this.degreeDistributionY;
+	}
+
+	
+	/**
+	 * getEdgeNumberkikj TODO 计算度为ki和kj的节点间的边数
+	 * 
+	 * @param degreeki
+	 *            度为ki
+	 * @param degreekj
+	 *            度为kj
+	 * @return 返回边数
+	 */
+	public int getEdgeNumberkikj(int degreeki, int degreekj)
+	{
+		int edgebetweennode = 0;
+		TreeSet<Integer> degreekNodeNeiborSet = new TreeSet<Integer>();
+		TreeSet<Integer> degreekNodeindex = this.DegreeToNodeindex
+				.get(degreeki);
+		TreeSet<Integer> degree_kNodeindex = this.DegreeToNodeindex
+				.get(degreekj);
+		Iterator<Integer> iterator = degreekNodeindex.iterator();
+		while (iterator.hasNext())
+		{
+			int value = iterator.next();
+		    TreeSet<Integer> treeSet=this.edgeInputMap.get(value);
+			degreekNodeNeiborSet.addAll(treeSet);
+		}
+		Iterator<Integer> iterator1 = degree_kNodeindex.iterator();
+		while (iterator1.hasNext())
+		{
+			int value = iterator1.next();
+			if (degreekNodeNeiborSet.contains(value))
+			{
+				edgebetweennode++;
+			}
+		}
+		return edgebetweennode;
+	}
+
+	/**
+	 * getEntropy TODO 计算度分布的熵
+	 * @throws IOException 
+	 */
+	public void getEntropy() throws IOException
+	{
+		System.out.println(this.df.format(new Date(System.currentTimeMillis()))
+				+"\t"+ "网络的熵开始计算！");
+         double sum=0;
+         int size=this.degreeDistributionY.size();
+         for(int i=0;i<size;i++)
+         {
+        	 double pk=(double)this.degreeDistributionY.get(i)/(double)this.nodenumber;
+        	 sum+=(-(pk*Math.log(pk)));
+         }
+         tOperation.Print(Double.toString(sum), "熵");
+         System.out.println(this.df.format(new Date(System.currentTimeMillis()))
+        		 +"\t"+ "网络的熵计算完毕！");
+	}
+
+	/**
+	 * getMixingMatrix TODO
+	 * 得到mixMatrix,其中的元素element(s,t)表示节点类型为s和节点类型为t的节点之间的边数,由于是对称矩阵，所以只存下三角矩阵
+	 * get assortative coefficient
+	 * @throws IOException
+	 */
+	public void getMixingMatrix() throws IOException
+	{
+		System.out.println(this.df.format(new Date(System.currentTimeMillis()))
+				+"\t"+ "开始计算网络的同配性");
+		int degreenumber = this.DegreeToNodeindex.size();
+		int[][] MixMatrix = new int[degreenumber][];
+		int TrMixMatrix = 0;
+		int sum = 0;
+		for (int i = 0; i < degreenumber; i++)
+		{
+			MixMatrix[i] = new int[i + 1];
+		}
+		Object[] nodeType = this.DegreeToNodeindex.keySet().toArray();
+		for (int i = 0; i < degreenumber; i++)
+		{
+			int nodes = (Integer) nodeType[i];
+			MixMatrix[i][i] = this.getEdgeNumberkikj(nodes, nodes);
+			TrMixMatrix += MixMatrix[i][i];
+			for (int j = 0; j < i; j++)
+			{
+				int nodet = (Integer) nodeType[j];
+				MixMatrix[i][j] = this.getEdgeNumberkikj(nodes, nodet);
+				sum += MixMatrix[i][j];
+			}
+		}
+		sum *= 2;
+		sum += TrMixMatrix;
+		double[][] NormalMixMatrix = new double[degreenumber][];
+		for (int i = 0; i < degreenumber; i++)
+		{
+			NormalMixMatrix[i] = new double[i + 1];
+		}
+		for (int i = 0; i < degreenumber; i++)
+		{
+			for (int j = 0; j < i; j++)
+			{
+				NormalMixMatrix[i][j] = (double) MixMatrix[i][j] / (double) sum;
+			}
+		}
+		this.assortativeCoefficient = ((double) TrMixMatrix / sum - 1)
+				/ (degreenumber - 1);
+		tOperation.Print(Double.toString(this.assortativeCoefficient), "同配性");
+
+		double powerNorMixMatrix = this.getPowerNorMM(NormalMixMatrix); // ||power(Matrix)||
+		double tem1 = (double) TrMixMatrix / (double) sum;
+		this.weightassortativeCoefficient = (tem1 - powerNorMixMatrix)
+				/ (1 - powerNorMixMatrix);
+		tOperation.Print(Double.toString(this.weightassortativeCoefficient), "加权同配性");
+		System.out.println(this.df.format(new Date(System.currentTimeMillis()))
+				+"\t"+ "同配性计算完毕！");
+	}
+
+
+	/**
+	 * getPkConditional TODO 计算度k和度k'的条件概率
+	 * 
+	 * @param degreek
+	 *            度数为k
+	 * @param degree_k
+	 *            度数为k'
+	 * @return 条件概率
+	 */
+	public double getPkConditional(int degreek, int degree_k)
+	{
+		double result = 0;
+		double pkjoint = this.getPkJoint(degreek, degree_k);
+		double pkFormerposteriori = this.getPkFormer(degreek);
+		result = this.averagedegree * pkjoint / degreek * pkFormerposteriori;
+
+		return result;
+	}
+
+	/**
+	 * getPkFormer TODO 计算度为k的前验概率
+	 * 
+	 * @param degreek
+	 *            度数为k
+	 * @return
+	 */
+	public double getPkFormer(int degreek)
+	{
+		double result = 0;
+		int degreekNodenumber = this.DegreeToNodeindex.get(degreek).size();
+		result = (double) degreekNodenumber / this.nodenumber;
+		return result;
+	}
+
+	/**
+	 * getPkJoint TODO 计算度数k和k'的联合概率
+	 * 
+	 * @param degreek
+	 *            度数为k
+	 * @param degree_k
+	 *            度数为k'
+	 * @return
+	 */
+	public double getPkJoint(int degreek, int degree_k)
+	{
+		double result = 0;
+		int edgebetweennode = this.getEdgeNumberkikj(degreek, degree_k);
+
+		result = (double) edgebetweennode / (double) this.edgenumber;
+
+		return result;
+	}
+
+	/**
+	 * getPowerNorMM TODO 矩阵的幂次
+	 * 
+	 * @param matrix
+	 *            原矩阵
+	 * @return
+	 */
+	public double getPowerNorMM(double[][] matrix)
+	{
+		double sum = 0;
+		int length = matrix.length;
+
+		for (int ii = 0; ii < length; ii++)
+		{
+			for (int jj = 0; jj < ii + 1; jj++)
+			{
+				sum += Math.pow(matrix[ii][jj], 2);
+			}
+			for (int jj = ii + 1; jj < length; jj++)
+			{
+				sum += (Math.pow(matrix[jj][ii], 2));
+			}
+
+		}
+		return sum;
+	}
+
+	/**
+	 * getPtscoefficient TODO 获得皮特森指数 前提是知道边数 所以先算度分布和聚类系数
+	 * 
+	 * @throws IOException
+	 */
+	public void getPtscoefficient() throws IOException
+	{
+		System.out.println(this.df.format(new Date(System.currentTimeMillis()))
+				+"\t"+ "开始计算皮特森系数！");
+		double tem = 1 / (double) this.edgenumber;
+		double tem1 = 0;
+		double tem2 = 0;
+		double tem3 = 0;
+		double tem4 = 0;
+		for (int i = 0; i < this.nodenumber; i++)
+		{
+			int ki = this.edgeInputMap.getRowLength(i);
+			double powerki = Math.pow(ki, 2);
+			for (int j = i + 1; j < this.nodenumber; j++)
+			{
+				int kj = this.edgeInputMap.getRowLength(j);
+				int aij = this.edgeInputMap.getValue(i, j);
+				double powerkj = Math.pow(kj, 2);
+				tem1 += (ki * kj * aij);
+				tem2 += (0.5 * (ki + kj) * aij);
+				tem3 += (0.5 * (powerki + powerkj) * aij);
+				tem4 += (0.5 * (ki + kj) * aij);
+			}
+		}
+		tem1 *= tem;
+		tem2 *= tem;
+		tem2 = Math.pow(tem2, 2);
+		tem3 *= tem;
+		tem4 *= tem;
+		tem4 = Math.pow(tem4, 2);
+		this.Pearsoncorrelationcoefficient = (tem1 - tem2) / (tem3 - tem4);
+		tOperation.Print(Double.toString(this.Pearsoncorrelationcoefficient),
+				"皮特森相关指数");
+		System.out.println(this.df.format(new Date(System.currentTimeMillis()))
+				+"\t"+ "皮特森系数计算完毕！");
+	}
+
+	/**
+	 * getRichClubCoefficient TODO 富人俱乐部系数
+	 * 
+	 * @throws IOException
+	 */
+	public void getRichClubCoefficient() throws IOException
+	{
+		System.out.println(this.df.format(new Date(System.currentTimeMillis()))
+				+"\t"+ "开始生成富人俱乐部系数");
+		Set<Integer> keySet = this.DegreeToNodeindex.keySet();
+		Collections.sort(this.degreeDistributionX);
+//		tOperation.Print(this.degreeDistributionX, "richclubdegreeX",this.nodenumber);
+		List<Double> richclubDegreey = new ArrayList<Double>();
+		int size = this.degreeDistributionX.size();
+
+		for (int i = 1; i < size; i++)
+		{
+			int sum = 0;
+			HashSet<Integer> neiborList = new HashSet<Integer>();
+			for (int j = i; j < size; j++)
+			{
+				TreeSet<Integer> perSet = this.DegreeToNodeindex
+						.get(this.degreeDistributionX.get(j));
+				neiborList.addAll(perSet);
+			}
+			Iterator<Integer> neiboIterator1 = neiborList.iterator();
+	
+			int sizeRk = neiborList.size();
+			if (sizeRk < 2)
+			{
+				richclubDegreey.add(0.0d);
+			} else
+			{
+				while (neiboIterator1.hasNext())
+				{
+					int value1 = neiboIterator1.next();
+					Iterator<Integer> neiboIterator2 = neiborList.iterator();
+					while (neiboIterator2.hasNext())
+					{
+						int value2 = neiboIterator2.next();
+						double value=this.edgeInputMap.getValue(value1, value2);
+						sum += value;
+
+					}
+
+				}
+
+			}
+			double tem = sizeRk * (sizeRk - 1);
+			richclubDegreey.add(sum / tem);
+		}
+		tOperation.Print(degreeDistributionX, richclubDegreey, "RichClubCoefficient");
+		System.out.println(this.df.format(new Date(System.currentTimeMillis()))
+				+"\t"+ "富人俱乐部系数生成完毕！");
+	}
+
+	public int indexof(int data, int lower, int higher)
+	{
+		int low = lower;
+		int high = higher;
+		int middle = (low + high) / 2;
+		if (data < this.degreeDistributionX.get(low)
+				|| data > this.degreeDistributionX.get(high))
+		{
+			return -1;
+		} else
+		{
+			if (middle >= low || middle <= high)
+			{
+				if (data == this.degreeDistributionX.get(middle))
+				{
+					return middle;
+				} else
+				{
+					if (data > this.degreeDistributionX.get(middle))
+					{
+						return this.indexof(data, middle + 1, high);
+					} else
+					{
+						return this.indexof(data, low, middle - 1);
+					}
+				}
+			}
+		}
+
+		return -1;
+	}
+
+	/**
+	 * InitializeProcess TODO 初始化操作
+	 */
+	public void InitializeProcess()
+	{
+		// nodenumber=adjaceInputMatrix.length;
+		this.degreeDistributionX = new ArrayList<Integer>();
+		this.degreeDistributionY = new ArrayList<Integer>();
+
+		this.nodeClusterCoffcient = new ArrayList<Double>();
+	}
+
+	/**
+	 * makeDegreeMatrix TODO 计算度分布矩阵，Map<degree,nodeindex>即度对应的节点索引 是做度相关的前提
+	 * @throws IOException 
+	 */
+	public void makeDegreeMatrix() throws IOException
+	{
+		System.out.println(this.df.format(new Date(System.currentTimeMillis()))
+				+"\t"+ "开始生成度分布矩阵");
+		this.DegreeToNodeindex = new HashMap<Integer, TreeSet<Integer>>();
+		HashMap<Integer, TreeSet<Integer>> NodeMatrix = this.edgeInputMap
+				.getAdjacementMap();
+
+		Iterator iterator = NodeMatrix.keySet().iterator();
+		while (iterator.hasNext())
+		{
+			int key = (Integer) iterator.next();
+			int degreeValue = NodeMatrix.get(key).size();
+			if (this.DegreeToNodeindex.containsKey(degreeValue))
+			{
+				TreeSet nodeindex = this.DegreeToNodeindex.get(degreeValue);
+				nodeindex.add(key);
+			} else
+			{
+				TreeSet nodeindex = new TreeSet<Integer>();
+				nodeindex.add(key);
+				this.DegreeToNodeindex.put(degreeValue, nodeindex);
+			}
+		}
+		tOperation.Print(this.DegreeToNodeindex,"DegreeDistributionMatrix" , this.nodenumber);
+		System.out.println(this.df.format(new Date(System.currentTimeMillis()))
+				+"\t"+ "生成度分布矩阵完毕");
+		
+	}
+
+	
+
+}

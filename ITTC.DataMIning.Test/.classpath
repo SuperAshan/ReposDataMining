@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ITTC.Core"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ITTC.DataMIning.Core"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ITTC.DataMIning.Data"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ITTC.RemoteService"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/gexf4j"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ITTC.DataMIning.Process"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ITTC.DataMIning.Weibo"/>
+	<classpathentry kind="lib" path="lib/cmu_time_awb.jar"/>
+	<classpathentry kind="lib" path="lib/cmu_us_kal.jar"/>
+	<classpathentry kind="lib" path="lib/cmudict04.jar"/>
+	<classpathentry kind="lib" path="lib/cmulex.jar"/>
+	<classpathentry kind="lib" path="lib/cmutimelex.jar"/>
+	<classpathentry kind="lib" path="lib/en_us.jar"/>
+	<classpathentry kind="lib" path="lib/freetts.jar"/>
+	<classpathentry kind="lib" path="/ITTC.Core/lib/jackson-all-1.8.5.jar"/>
+	<classpathentry kind="lib" path="/ITTC.Core/lib/linq4j-TRUNK-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/ITTC.Core/lib/poi-3.9.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

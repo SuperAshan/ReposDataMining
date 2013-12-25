@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ITTC.Core"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ITTC.DataMIning.Core"/>
+	<classpathentry kind="lib" path="lib/gnu-trove-1.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/mmseg4j-analysis-1.9.1.jar"/>
+	<classpathentry kind="lib" path="lib/mmseg4j-core-1.9.1.jar"/>
+	<classpathentry kind="lib" path="lib/mmseg4j-solr-1.9.1.jar"/>
+	<classpathentry kind="lib" path="lib/commons-cli-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/commons-codec-1.7.jar"/>
+	<classpathentry kind="lib" path="lib/commons-fileupload-1.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/commons-io-2.1.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang-2.6.jar"/>
+	<classpathentry kind="lib" path="lib/solr-core-4.3.1.jar"/>
+	<classpathentry kind="lib" path="lib/solr-solrj-4.3.1.jar"/>
+	<classpathentry kind="lib" path="lib/spatial4j-0.3.jar"/>
+	<classpathentry kind="lib" path="lib/httpclient-4.2.3.jar"/>
+	<classpathentry kind="lib" path="lib/httpcore-4.2.2.jar"/>
+	<classpathentry kind="lib" path="lib/httpmime-4.2.3.jar"/>
+	<classpathentry kind="lib" path="lib/jcl-over-slf4j-1.6.6.jar"/>
+	<classpathentry kind="lib" path="lib/jul-to-slf4j-1.6.6.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.16.jar"/>
+	<classpathentry kind="lib" path="lib/noggit-0.5.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.6.6.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-log4j12-1.6.6.jar"/>
+	<classpathentry kind="lib" path="lib/wstx-asl-3.2.7.jar"/>
+	<classpathentry kind="lib" path="lib/zookeeper-3.4.5.jar"/>
+	<classpathentry kind="lib" path="/ITTC.Core/lib/linq4j-TRUNK-SNAPSHOT.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ITTC.DataMIning.Data"/>
+	<classpathentry kind="lib" path="lib/IKAnalyzer2012FF_u1.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-core-4.3.1.jar"/>
+	<classpathentry kind="lib" path="lib/mongo-java-driver-2.11.3.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ITTC.DataMIning.Weibo"/>
+	<classpathentry kind="lib" path="lib/mongo-2.10.1.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

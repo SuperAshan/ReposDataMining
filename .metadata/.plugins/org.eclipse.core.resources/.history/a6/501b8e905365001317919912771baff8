@@ -1,0 +1,18 @@
+package BasicTest;
+
+import java.util.TreeSet;
+
+public class cloneExample {
+	public void test()
+	{
+		TreeSet<Integer> formerSet=new TreeSet<Integer>();
+		for(int i=0;i<5;i++)
+		{
+			formerSet.add(i);
+		}
+		TreeSet<Integer> latterSet=new TreeSet<Integer>();
+		latterSet=(TreeSet<Integer>)formerSet.clone();
+		
+	}
+
+}
